@@ -213,6 +213,7 @@ Built with:
 - [custom:stack-in-card](https://github.com/custom-cards/stack-in-card)
 - [card-mod](https://github.com/thomasloven/lovelace-card-mod)
 - [Roborock Core Integration](https://www.home-assistant.io/integrations/roborock/)
+- [Thanks to Daniel Torobekov for my dashboard background](https://www.pexels.com/photo/low-angle-shot-of-a-starry-night-sky-10257142/)
 
 ## License
 
