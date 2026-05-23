@@ -1,0 +1,14 @@
+# Roborock Vacuum Dashboard - Input Numbers
+# Add to your input_number configuration
+#
+# If using split YAML: save as /config/input_numbers/roborock_vacuum.yaml
+# If inline: merge under your existing input_number: key in configuration.yaml
+
+vacuum_clean_repeat:
+  name: "Vacuum Clean Repeat"
+  icon: mdi:repeat
+  min: 1
+  max: 2
+  step: 1
+  initial: 1
+  mode: slider
