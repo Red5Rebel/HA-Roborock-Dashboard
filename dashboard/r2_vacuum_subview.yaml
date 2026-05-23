@@ -1,10 +1,11 @@
 ###############################################
-#          ROBOROCK VACUUM DASHBOARD          #
-#          Home Assistant Subview             #
+#       ROBOROCK VACUUM DASHBOARD             #
+#       Home Assistant Subview                #
 ###############################################
 #
 # BEFORE USING: Find and replace all placeholder
-# entity IDs. See README.md for the full list.
+# entity IDs (YOUR_VACUUM, vacuum_room_*, etc).
+# See README.md for the full entity reference.
 #
 # Requires: button-card, stack-in-card, card-mod (HACS)
 #
@@ -15,9 +16,71 @@ path: vacuum
 subview: true
 sections:
   - cards:
+      # =============================================================
+      #  MAP & HEADER — Roborock logo + vacuum map
+      #  NOTE: Adjust scale() and translateY() for YOUR floor plan.
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+              overflow: hidden;
+            }
+        cards:
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 12px 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: "\"content\""
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  return `
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <img src="/local/icons/roborock-logo-white.svg" style="height: 28px;" />
+                      <img src="/local/icons/r2d2.svg" style="height: 36px;" />
+                    </div>
+                  `;
+                ]]]
+          - type: picture-entity
+            entity: image.YOUR_VACUUM_map
+            show_name: false
+            show_state: false
+            card_mod:
+              style:
+                hui-image$: |
+                  img {
+                    image-rendering: auto;
+                    filter: contrast(1.1) saturate(1.2) blur(0.5px);
+                    transform: scale(1.3) translateY(3%);
+                  }
+                .: |
+                  ha-card {
+                    border: none;
+                    box-shadow: none;
+                  }
 
       # =============================================================
-      #  STATUS BAR — Battery | Status | Room
+      #  STATUS — Battery, current status, room, errors
       # =============================================================
       - type: custom:stack-in-card
         mode: vertical
@@ -45,7 +108,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -132,7 +195,7 @@ sections:
                 ]]]
 
       # =============================================================
-      #  MODE TOGGLE — Vacuum / Mop
+      #  CLEANING MODE — Vacuum / Mop toggle
       # =============================================================
       - type: custom:stack-in-card
         mode: vertical
@@ -159,7 +222,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -292,7 +355,7 @@ sections:
                   - border: none
                   - box-shadow: none
                 grid:
-                  - grid-template-areas: '"content"'
+                  - grid-template-areas: "\"content\""
                   - grid-template-columns: 1fr
                 custom_fields:
                   content:
@@ -377,7 +440,7 @@ sections:
                   - border: none
                   - box-shadow: none
                 grid:
-                  - grid-template-areas: '"content"'
+                  - grid-template-areas: "\"content\""
                   - grid-template-columns: 1fr
                 custom_fields:
                   content:
@@ -464,7 +527,7 @@ sections:
                   - height: 8px
 
       # =============================================================
-      #  ROOM SELECT — Toggle Grid
+      #  ROOM SELECT — Toggle grid + selected count
       #  NOTE: Add/remove rows to match your room count.
       #        Update room names and input_boolean entities.
       # =============================================================
@@ -493,7 +556,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -525,7 +588,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
+                styles: &room_styles
                   card:
                     - background: |
                         [[[
@@ -551,25 +614,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 entity: input_boolean.vacuum_room_3
                 name: Room 3
@@ -577,25 +622,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
           # Row 2
           - type: horizontal-stack
             cards:
@@ -606,25 +633,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 entity: input_boolean.vacuum_room_5
                 name: Room 5
@@ -632,25 +641,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 entity: input_boolean.vacuum_room_6
                 name: Room 6
@@ -658,25 +649,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
           # Row 3
           - type: horizontal-stack
             cards:
@@ -687,25 +660,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 entity: input_boolean.vacuum_room_8
                 name: Room 8
@@ -713,25 +668,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 entity: input_boolean.vacuum_room_9
                 name: Room 9
@@ -739,25 +676,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
           # Row 4 (2 rooms + empty spacer)
           - type: horizontal-stack
             cards:
@@ -768,25 +687,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 entity: input_boolean.vacuum_room_11
                 name: Room 11
@@ -794,25 +695,7 @@ sections:
                 show_state: false
                 tap_action:
                   action: toggle
-                styles:
-                  card:
-                    - background: |
-                        [[[
-                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
-                        ]]]
-                    - border: |
-                        [[[
-                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
-                        ]]]
-                    - box-shadow: none
-                    - border-radius: 12px
-                    - padding: 10px 4px
-                  name:
-                    - font-size: 11px
-                    - color: |
-                        [[[
-                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
-                        ]]]
+                styles: *room_styles
               - type: custom:button-card
                 show_name: false
                 show_icon: false
@@ -840,7 +723,7 @@ sections:
                 - height: 8px
 
       # =============================================================
-      #  CLEANING COUNT + START / PAUSE / DOCK
+      #  CLEANING COUNT & CONTROLS — Passes + Start/Pause/Dock
       # =============================================================
       - type: custom:stack-in-card
         mode: vertical
@@ -867,7 +750,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -881,7 +764,7 @@ sections:
             cards:
               - type: custom:button-card
                 entity: input_number.vacuum_clean_repeat
-                name: "1×"
+                name: 1×
                 show_icon: false
                 show_state: false
                 tap_action:
@@ -912,7 +795,7 @@ sections:
                         ]]]
               - type: custom:button-card
                 entity: input_number.vacuum_clean_repeat
-                name: "2×"
+                name: 2×
                 show_icon: false
                 show_state: false
                 tap_action:
@@ -954,7 +837,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -987,7 +870,7 @@ sections:
                   icon:
                     - width: 28px
                     - height: 28px
-                    - color: '#4CAF50'
+                    - color: "#4CAF50"
                   name:
                     - font-size: 12px
                     - color: var(--secondary-text-color)
@@ -1013,7 +896,7 @@ sections:
                   icon:
                     - width: 28px
                     - height: 28px
-                    - color: '#FF9800'
+                    - color: "#FF9800"
                   name:
                     - font-size: 12px
                     - color: var(--secondary-text-color)
@@ -1039,7 +922,7 @@ sections:
                   icon:
                     - width: 28px
                     - height: 28px
-                    - color: '#2196F3'
+                    - color: "#2196F3"
                   name:
                     - font-size: 12px
                     - color: var(--secondary-text-color)
@@ -1059,73 +942,7 @@ sections:
                 - height: 8px
 
       # =============================================================
-      #  LIVE MAP — Display Only (with header)
-      #  NOTE: Adjust scale() and translateY() for your floor plan.
-      #        Remove the header card if you don't want the logos.
-      # =============================================================
-      - type: custom:stack-in-card
-        mode: vertical
-        layout_options:
-          columns: 4
-        card_mod:
-          style: |
-            ha-card {
-              border-radius: 24px;
-              border: 1px solid var(--divider-color);
-              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
-              overflow: hidden;
-            }
-        cards:
-          # --- Map Header (Roborock logo + optional icon) ---
-          - type: custom:button-card
-            show_name: false
-            show_icon: false
-            show_state: false
-            tap_action:
-              action: none
-            styles:
-              card:
-                - padding: 12px 20px
-                - background: none
-                - border: none
-                - box-shadow: none
-              grid:
-                - grid-template-areas: '"content"'
-                - grid-template-columns: 1fr
-              custom_fields:
-                content:
-                  - width: 100%
-            custom_fields:
-              content: |
-                [[[
-                  return `
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                      <img src="/local/icons/roborock-logo-white.svg" style="height: 28px;" />
-                      <img src="/local/icons/r2d2.svg" style="height: 36px;" />
-                    </div>
-                  `;
-                ]]]
-          # --- Map Image ---
-          - type: picture-entity
-            entity: image.YOUR_VACUUM_map
-            show_name: false
-            show_state: false
-            card_mod:
-              style:
-                hui-image$: |
-                  img {
-                    image-rendering: auto;
-                    filter: contrast(1.1) saturate(1.2) blur(0.5px);
-                    transform: scale(1.3) translateY(3%);
-                  }
-                .: |
-                  ha-card {
-                    border: none;
-                    box-shadow: none;
-                  }
-
-      # =============================================================
-      #  CLEANING STATS
+      #  CONSUMABLES — Brush/filter/sensor life progress bars
       # =============================================================
       - type: custom:stack-in-card
         mode: vertical
@@ -1153,131 +970,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
-                - grid-template-columns: 1fr
-              custom_fields:
-                content:
-                  - width: 100%
-            custom_fields:
-              content: |
-                [[[
-                  const area = states['sensor.YOUR_VACUUM_cleaning_area'].state;
-                  const time = states['sensor.YOUR_VACUUM_cleaning_time'].state;
-                  const progress = states['sensor.YOUR_VACUUM_cleaning_progress'].state;
-                  const lastBegin = states['sensor.YOUR_VACUUM_last_clean_begin'].state;
-                  const totalArea = states['sensor.YOUR_VACUUM_total_cleaning_area'].state;
-                  const totalCount = states['sensor.YOUR_VACUUM_total_cleaning_count'].state;
-                  const totalTime = states['sensor.YOUR_VACUUM_total_cleaning_time'].state;
-
-                  let lastCleanStr = '—';
-                  if (lastBegin && lastBegin !== 'unknown' && lastBegin !== 'unavailable') {
-                    const d = new Date(lastBegin);
-                    const now = new Date();
-                    const diffMs = now - d;
-                    const diffHrs = Math.floor(diffMs / 3600000);
-                    const diffDays = Math.floor(diffHrs / 24);
-                    if (diffDays > 0) {
-                      lastCleanStr = diffDays === 1 ? 'Yesterday' : diffDays + ' days ago';
-                    } else if (diffHrs > 0) {
-                      lastCleanStr = diffHrs + 'h ago';
-                    } else {
-                      lastCleanStr = 'Just now';
-                    }
-                  }
-
-                  const timeMin = parseFloat(time);
-                  const timeStr = timeMin >= 60 ? Math.floor(timeMin/60) + 'h ' + Math.round(timeMin%60) + 'm' : Math.round(timeMin) + 'm';
-
-                  const totalHrs = parseFloat(totalTime);
-                  const totalTimeStr = totalHrs >= 1 ? Math.round(totalHrs) + 'h' : Math.round(totalHrs * 60) + 'm';
-
-                  const progressVal = parseInt(progress);
-                  const showProgress = progressVal > 0 && progressVal < 100;
-
-                  return `
-                    <div>
-                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                        <div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Cleaning Stats</div>
-                      </div>
-
-                      ${showProgress ? `
-                        <div style="margin-bottom: 16px;">
-                          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                            <span style="font-size: 12px; color: var(--secondary-text-color);">Progress</span>
-                            <span style="font-size: 12px; color: var(--primary-text-color);">${progressVal}%</span>
-                          </div>
-                          <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 6px; overflow: hidden;">
-                            <div style="background: #4CAF50; height: 100%; width: ${progressVal}%; border-radius: 4px; transition: width 0.5s ease;"></div>
-                          </div>
-                        </div>
-                      ` : ''}
-
-                      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                        <div style="text-align: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
-                          <div style="font-size: 11px; color: var(--secondary-text-color); margin-bottom: 4px;">LAST CLEAN</div>
-                          <div style="font-size: 15px; font-weight: 500; color: var(--primary-text-color);">${lastCleanStr}</div>
-                        </div>
-                        <div style="text-align: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
-                          <div style="font-size: 11px; color: var(--secondary-text-color); margin-bottom: 4px;">AREA</div>
-                          <div style="font-size: 15px; font-weight: 500; color: var(--primary-text-color);">${area} m²</div>
-                        </div>
-                        <div style="text-align: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
-                          <div style="font-size: 11px; color: var(--secondary-text-color); margin-bottom: 4px;">TIME</div>
-                          <div style="font-size: 15px; font-weight: 500; color: var(--primary-text-color);">${timeStr}</div>
-                        </div>
-                      </div>
-
-                      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--divider-color);">
-                        <div style="font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; margin-bottom: 8px;">Lifetime</div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                          <div style="text-align: center;">
-                            <div style="font-size: 16px; font-weight: 500; color: var(--primary-text-color);">${totalCount}</div>
-                            <div style="font-size: 11px; color: var(--secondary-text-color);">Cleans</div>
-                          </div>
-                          <div style="text-align: center;">
-                            <div style="font-size: 16px; font-weight: 500; color: var(--primary-text-color);">${parseFloat(totalArea).toLocaleString()} m²</div>
-                            <div style="font-size: 11px; color: var(--secondary-text-color);">Total Area</div>
-                          </div>
-                          <div style="text-align: center;">
-                            <div style="font-size: 16px; font-weight: 500; color: var(--primary-text-color);">${totalTimeStr}</div>
-                            <div style="font-size: 11px; color: var(--secondary-text-color);">Total Time</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                ]]]
-
-      # =============================================================
-      #  CONSUMABLES
-      # =============================================================
-      - type: custom:stack-in-card
-        mode: vertical
-        layout_options:
-          columns: 4
-        card_mod:
-          style: |
-            ha-card {
-              border-radius: 24px;
-              border: 1px solid var(--divider-color);
-              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
-            }
-        cards:
-          - type: custom:button-card
-            entity: vacuum.YOUR_VACUUM
-            show_name: false
-            show_icon: false
-            show_state: false
-            tap_action:
-              action: none
-            styles:
-              card:
-                - padding: 20px
-                - background: none
-                - border: none
-                - box-shadow: none
-              grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -1322,15 +1015,15 @@ sections:
                         <div style="width: 20px; height: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                           <ha-icon icon="mdi:wrench-clock" style="color: var(--secondary-text-color);"></ha-icon>
                         </div>
-                        <div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Consumables</div>
-                      </div>
+                           <div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Consumables</div>
+                        </div>
                       ${rows}
                     </div>
                   `;
                 ]]]
 
       # =============================================================
-      #  DOCK STATUS
+      #  DOCK STATUS — Tanks, mop/water box, drying, errors
       #  NOTE: Drying time sensor returns SECONDS. If yours uses
       #        minutes, remove the "/ 60" conversion below.
       # =============================================================
@@ -1360,7 +1053,7 @@ sections:
                 - border: none
                 - box-shadow: none
               grid:
-                - grid-template-areas: '"content"'
+                - grid-template-areas: "\"content\""
                 - grid-template-columns: 1fr
               custom_fields:
                 content:
@@ -1383,7 +1076,6 @@ sections:
                   const isDrying = mopDrying === 'on';
                   const hasWaterShortage = waterShortage === 'on';
 
-                  // Drying time: sensor returns SECONDS, convert to minutes
                   const dryingMin = Math.round(parseInt(dryingTime) / 60);
                   const dryingStr = dryingMin >= 60 ? Math.floor(dryingMin/60) + 'h ' + (dryingMin%60) + 'm' : dryingMin + 'm';
 
