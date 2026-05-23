@@ -1,0 +1,117 @@
+# Roborock Vacuum Dashboard - Scripts
+# Add these to your /config/scripts.yaml
+#
+# CUSTOMIZE BEFORE USE:
+# 1. Replace vacuum.YOUR_VACUUM with your vacuum entity ID
+# 2. Replace select.YOUR_VACUUM_mop_intensity with your mop intensity entity
+# 3. Replace select.YOUR_VACUUM_mop_mode with your mop mode entity
+# 4. Update room IDs in start_vacuum_clean to match YOUR rooms
+#    (See README for how to find your room IDs)
+
+set_vacuum_mode:
+  alias: "Set Vacuum Mode"
+  sequence:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.vacuum_mop_mode
+    - action: vacuum.set_fan_speed
+      target:
+        entity_id: vacuum.YOUR_VACUUM
+      data:
+        fan_speed: max_plus    # Options vary by model: quiet, balanced, turbo, max, max+
+    - action: select.select_option
+      target:
+        entity_id: select.YOUR_VACUUM_mop_intensity
+      data:
+        option: "off"          # Setting mop_intensity to "off" = vacuum-only mode
+    - action: select.select_option
+      target:
+        entity_id: select.YOUR_VACUUM_mop_mode
+      data:
+        option: standard
+
+set_mop_mode:
+  alias: "Set Mop Mode"
+  sequence:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.vacuum_mop_mode
+    - action: vacuum.set_fan_speed
+      target:
+        entity_id: vacuum.YOUR_VACUUM
+      data:
+        fan_speed: turbo       # Adjust suction level for mop mode to your preference
+    - action: select.select_option
+      target:
+        entity_id: select.YOUR_VACUUM_mop_intensity
+      data:
+        option: low
+    - action: select.select_option
+      target:
+        entity_id: select.YOUR_VACUUM_mop_mode
+      data:
+        option: standard
+
+start_vacuum_clean:
+  alias: "Start Vacuum Room Clean"
+  sequence:
+    - action: vacuum.send_command
+      target:
+        entity_id: vacuum.YOUR_VACUUM
+      data:
+        command: app_segment_clean
+        params:
+          - segments: >-
+              {{ [
+                states('input_boolean.vacuum_room_1') == 'on' and 16 or none,
+                states('input_boolean.vacuum_room_2') == 'on' and 17 or none,
+                states('input_boolean.vacuum_room_3') == 'on' and 18 or none,
+                states('input_boolean.vacuum_room_4') == 'on' and 19 or none,
+                states('input_boolean.vacuum_room_5') == 'on' and 20 or none,
+                states('input_boolean.vacuum_room_6') == 'on' and 21 or none,
+                states('input_boolean.vacuum_room_7') == 'on' and 22 or none,
+                states('input_boolean.vacuum_room_8') == 'on' and 23 or none,
+                states('input_boolean.vacuum_room_9') == 'on' and 24 or none,
+                states('input_boolean.vacuum_room_10') == 'on' and 25 or none,
+                states('input_boolean.vacuum_room_11') == 'on' and 26 or none
+              ] | reject('none') | list }}
+            repeat: "{{ states('input_number.vacuum_clean_repeat') | int }}"
+    # Reset all room toggles after sending command
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.vacuum_room_1
+          - input_boolean.vacuum_room_2
+          - input_boolean.vacuum_room_3
+          - input_boolean.vacuum_room_4
+          - input_boolean.vacuum_room_5
+          - input_boolean.vacuum_room_6
+          - input_boolean.vacuum_room_7
+          - input_boolean.vacuum_room_8
+          - input_boolean.vacuum_room_9
+          - input_boolean.vacuum_room_10
+          - input_boolean.vacuum_room_11
+
+# ROOM ID MAPPING — Update these to match YOUR home:
+# ┌──────────────────────────────────────────────────┐
+# │ input_boolean.vacuum_room_1  → Room ID: 16       │
+# │ input_boolean.vacuum_room_2  → Room ID: 17       │
+# │ input_boolean.vacuum_room_3  → Room ID: 18       │
+# │ input_boolean.vacuum_room_4  → Room ID: 19       │
+# │ input_boolean.vacuum_room_5  → Room ID: 20       │
+# │ input_boolean.vacuum_room_6  → Room ID: 21       │
+# │ input_boolean.vacuum_room_7  → Room ID: 22       │
+# │ input_boolean.vacuum_room_8  → Room ID: 23       │
+# │ input_boolean.vacuum_room_9  → Room ID: 24       │
+# │ input_boolean.vacuum_room_10 → Room ID: 25       │
+# │ input_boolean.vacuum_room_11 → Room ID: 26       │
+# └──────────────────────────────────────────────────┘
+#
+# To find your room IDs:
+# 1. Developer Tools → Actions → vacuum.send_command
+# 2. Target your vacuum, command: get_room_mapping
+# 3. Or check the Roborock app for room names/IDs
+#
+# Add or remove rooms as needed. Update the segments
+# template, the reset list, and the dashboard room grid
+# to match.
