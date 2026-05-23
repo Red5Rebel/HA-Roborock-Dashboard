@@ -1,0 +1,1436 @@
+###############################################
+#          ROBOROCK VACUUM DASHBOARD          #
+#          Home Assistant Subview             #
+###############################################
+#
+# BEFORE USING: Find and replace all placeholder
+# entity IDs. See README.md for the full list.
+#
+# Requires: button-card, stack-in-card, card-mod (HACS)
+#
+type: sections
+max_columns: 4
+title: Vacuum
+path: vacuum
+subview: true
+sections:
+  - cards:
+
+      # =============================================================
+      #  STATUS BAR — Battery | Status | Room
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            entity: vacuum.YOUR_VACUUM
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: more-info
+            styles:
+              card:
+                - padding: 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  const battery = states['sensor.YOUR_VACUUM_battery'].state;
+                  const charging = states['binary_sensor.YOUR_VACUUM_charging'].state === 'on';
+                  const status = states['sensor.YOUR_VACUUM_status'].state;
+                  const room = states['sensor.YOUR_VACUUM_current_room'].state;
+                  const error = states['sensor.YOUR_VACUUM_vacuum_error'].state;
+
+                  const battLevel = parseInt(battery);
+                  const battColor = battLevel > 60 ? '#4CAF50' : battLevel > 20 ? '#FF9800' : '#F44336';
+                  const battIcon = charging ? 'mdi:battery-charging' :
+                    battLevel > 90 ? 'mdi:battery' :
+                    battLevel > 70 ? 'mdi:battery-80' :
+                    battLevel > 50 ? 'mdi:battery-60' :
+                    battLevel > 30 ? 'mdi:battery-40' :
+                    battLevel > 10 ? 'mdi:battery-20' : 'mdi:battery-alert';
+
+                  const statusMap = {
+                    'charging': 'Charging', 'charging_complete': 'Fully Charged',
+                    'cleaning': 'Cleaning', 'docked': 'Docked', 'error': 'Error',
+                    'idle': 'Idle', 'paused': 'Paused', 'returning_home': 'Returning Home',
+                    'starting': 'Starting', 'washing_the_mop': 'Washing Mop',
+                    'washing_the_mop_2': 'Washing Mop', 'going_to_wash_the_mop': 'Going to Wash Mop',
+                    'emptying_the_bin': 'Emptying Bin', 'docking': 'Docking',
+                    'segment_cleaning': 'Room Cleaning', 'segment_mopping': 'Room Mopping',
+                    'zoned_cleaning': 'Zone Cleaning', 'spot_cleaning': 'Spot Cleaning',
+                    'going_to_target': 'Going to Target', 'remote_control_active': 'Remote Control',
+                    'updating': 'Updating', 'air_drying_stopping': 'Stopping Air Dry',
+                    'robot_status_mopping': 'Mopping', 'back_to_dock_washing_duster': 'Returning to Wash',
+                    'clean_mop_cleaning': 'Clean Mop Cleaning', 'clean_mop_mopping': 'Clean Mop Mopping',
+                    'segment_clean_mop_cleaning': 'Room Clean+Mop', 'segment_clean_mop_mopping': 'Room Clean+Mop',
+                    'zoned_mopping': 'Zone Mopping', 'mapping': 'Mapping'
+                  };
+                  const statusText = statusMap[status] || status.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+                  const activeStates = ['cleaning','segment_cleaning','segment_mopping','robot_status_mopping','zoned_cleaning','spot_cleaning','clean_mop_cleaning','clean_mop_mopping','segment_clean_mop_cleaning','segment_clean_mop_mopping','zoned_mopping'];
+                  const transitStates = ['returning_home','docking','going_to_wash_the_mop','back_to_dock_washing_duster','going_to_target'];
+                  const maintStates = ['washing_the_mop','washing_the_mop_2','emptying_the_bin','air_drying_stopping'];
+                  const errorStates = ['error','charging_problem'];
+
+                  const statusColor = activeStates.includes(status) ? '#4CAF50' :
+                    transitStates.includes(status) ? '#2196F3' :
+                    errorStates.includes(status) ? '#F44336' :
+                    maintStates.includes(status) ? '#9C27B0' :
+                    'var(--secondary-text-color)';
+
+                  const roomText = room && room !== 'unknown' ? room : '—';
+                  const hasError = error && error !== 'none';
+
+                  return `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; align-items: start;">
+                      <div style="text-align: center;">
+                        <div style="font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; margin-bottom: 4px;">Battery</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+                          <div style="width: 20px; height: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transform: rotate(90deg);">
+                            <ha-icon icon="${battIcon}" style="color: ${battColor};"></ha-icon>
+                          </div>
+                          <span style="font-size: 14px; font-weight: 500; color: ${battColor};">${battery}%</span>
+                        </div>
+                      </div>
+                      <div style="text-align: center;">
+                        <div style="font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; margin-bottom: 4px;">Status</div>
+                        <div style="font-size: 14px; font-weight: 500; color: ${statusColor}; word-wrap: break-word;">${statusText}</div>
+                      </div>
+                      <div style="text-align: center;">
+                        <div style="font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; margin-bottom: 4px;">Room</div>
+                        <div style="font-size: 14px; font-weight: 500; color: var(--primary-text-color); word-wrap: break-word;">${roomText}</div>
+                      </div>
+                    </div>
+                    ${hasError ? `
+                      <div style="margin-top: 12px; padding: 8px 12px; background: rgba(244,67,54,0.15); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 18px; height: 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                          <ha-icon icon="mdi:alert-circle" style="color: #F44336;"></ha-icon>
+                        </div>
+                        <span style="font-size: 13px; color: #F44336;">${error.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                      </div>
+                    ` : ''}
+                  `;
+                ]]]
+
+      # =============================================================
+      #  MODE TOGGLE — Vacuum / Mop
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 16px 20px 8px 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  return `<div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Cleaning Mode</div>`;
+                ]]]
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: input_boolean.vacuum_mop_mode
+                icon: mdi:vacuum
+                name: Vacuum
+                show_name: true
+                show_icon: true
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: script.set_vacuum_mode
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'off' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'off' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 14px 4px
+                  icon:
+                    - width: 28px
+                    - height: 28px
+                    - color: |
+                        [[[
+                          return entity.state === 'off' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+                  name:
+                    - font-size: 12px
+                    - margin-top: 4px
+                    - color: |
+                        [[[
+                          return entity.state === 'off' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_mop_mode
+                icon: mdi:water
+                name: Mop
+                show_name: true
+                show_icon: true
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: script.set_mop_mode
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(66,165,245,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(66,165,245,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 14px 4px
+                  icon:
+                    - width: 28px
+                    - height: 28px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+                  name:
+                    - font-size: 12px
+                    - margin-top: 4px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 0
+                - background: none
+                - border: none
+                - box-shadow: none
+                - height: 8px
+
+      # =============================================================
+      #  MOP OPTIONS — Water Flow + Route (only visible in Mop mode)
+      # =============================================================
+      - type: conditional
+        conditions:
+          - entity: input_boolean.vacuum_mop_mode
+            state: "on"
+        card:
+          type: custom:stack-in-card
+          mode: vertical
+          layout_options:
+            columns: 4
+          card_mod:
+            style: |
+              ha-card {
+                border-radius: 24px;
+                border: 1px solid var(--divider-color);
+                box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+              }
+          cards:
+            - type: custom:button-card
+              show_name: false
+              show_icon: false
+              show_state: false
+              tap_action:
+                action: none
+              styles:
+                card:
+                  - padding: 16px 20px 8px 20px
+                  - background: none
+                  - border: none
+                  - box-shadow: none
+                grid:
+                  - grid-template-areas: '"content"'
+                  - grid-template-columns: 1fr
+                custom_fields:
+                  content:
+                    - width: 100%
+              custom_fields:
+                content: |
+                  [[[
+                    return `<div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Water Flow</div>`;
+                  ]]]
+            - type: horizontal-stack
+              cards:
+                - type: custom:button-card
+                  entity: select.YOUR_VACUUM_mop_intensity
+                  name: Low
+                  show_icon: false
+                  show_state: false
+                  tap_action:
+                    action: call-service
+                    service: select.select_option
+                    service_data:
+                      entity_id: select.YOUR_VACUUM_mop_intensity
+                      option: low
+                  styles:
+                    card:
+                      - background: |
+                          [[[
+                            return entity.state === 'low' ? 'rgba(66,165,245,0.4)' : 'rgba(0,0,0,0.2)';
+                          ]]]
+                      - border: |
+                          [[[
+                            return entity.state === 'low' ? '1px solid rgba(66,165,245,0.6)' : '1px solid transparent';
+                          ]]]
+                      - box-shadow: none
+                      - border-radius: 12px
+                      - padding: 10px 4px
+                    name:
+                      - font-size: 12px
+                      - color: |
+                          [[[
+                            return entity.state === 'low' ? '#fff' : 'var(--secondary-text-color)';
+                          ]]]
+                - type: custom:button-card
+                  entity: select.YOUR_VACUUM_mop_intensity
+                  name: High
+                  show_icon: false
+                  show_state: false
+                  tap_action:
+                    action: call-service
+                    service: select.select_option
+                    service_data:
+                      entity_id: select.YOUR_VACUUM_mop_intensity
+                      option: high
+                  styles:
+                    card:
+                      - background: |
+                          [[[
+                            return entity.state === 'high' ? 'rgba(66,165,245,0.4)' : 'rgba(0,0,0,0.2)';
+                          ]]]
+                      - border: |
+                          [[[
+                            return entity.state === 'high' ? '1px solid rgba(66,165,245,0.6)' : '1px solid transparent';
+                          ]]]
+                      - box-shadow: none
+                      - border-radius: 12px
+                      - padding: 10px 4px
+                    name:
+                      - font-size: 12px
+                      - color: |
+                          [[[
+                            return entity.state === 'high' ? '#fff' : 'var(--secondary-text-color)';
+                          ]]]
+            - type: custom:button-card
+              show_name: false
+              show_icon: false
+              show_state: false
+              tap_action:
+                action: none
+              styles:
+                card:
+                  - padding: 12px 20px 8px 20px
+                  - background: none
+                  - border: none
+                  - box-shadow: none
+                grid:
+                  - grid-template-areas: '"content"'
+                  - grid-template-columns: 1fr
+                custom_fields:
+                  content:
+                    - width: 100%
+              custom_fields:
+                content: |
+                  [[[
+                    return `<div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Route</div>`;
+                  ]]]
+            - type: horizontal-stack
+              cards:
+                - type: custom:button-card
+                  entity: select.YOUR_VACUUM_mop_mode
+                  name: Standard
+                  show_icon: false
+                  show_state: false
+                  tap_action:
+                    action: call-service
+                    service: select.select_option
+                    service_data:
+                      entity_id: select.YOUR_VACUUM_mop_mode
+                      option: standard
+                  styles:
+                    card:
+                      - background: |
+                          [[[
+                            return entity.state === 'standard' ? 'rgba(66,165,245,0.4)' : 'rgba(0,0,0,0.2)';
+                          ]]]
+                      - border: |
+                          [[[
+                            return entity.state === 'standard' ? '1px solid rgba(66,165,245,0.6)' : '1px solid transparent';
+                          ]]]
+                      - box-shadow: none
+                      - border-radius: 12px
+                      - padding: 10px 4px
+                    name:
+                      - font-size: 12px
+                      - color: |
+                          [[[
+                            return entity.state === 'standard' ? '#fff' : 'var(--secondary-text-color)';
+                          ]]]
+                - type: custom:button-card
+                  entity: select.YOUR_VACUUM_mop_mode
+                  name: Deep+
+                  show_icon: false
+                  show_state: false
+                  tap_action:
+                    action: call-service
+                    service: select.select_option
+                    service_data:
+                      entity_id: select.YOUR_VACUUM_mop_mode
+                      option: deep_plus
+                  styles:
+                    card:
+                      - background: |
+                          [[[
+                            return entity.state === 'deep_plus' ? 'rgba(66,165,245,0.4)' : 'rgba(0,0,0,0.2)';
+                          ]]]
+                      - border: |
+                          [[[
+                            return entity.state === 'deep_plus' ? '1px solid rgba(66,165,245,0.6)' : '1px solid transparent';
+                          ]]]
+                      - box-shadow: none
+                      - border-radius: 12px
+                      - padding: 10px 4px
+                    name:
+                      - font-size: 12px
+                      - color: |
+                          [[[
+                            return entity.state === 'deep_plus' ? '#fff' : 'var(--secondary-text-color)';
+                          ]]]
+            - type: custom:button-card
+              show_name: false
+              show_icon: false
+              show_state: false
+              tap_action:
+                action: none
+              styles:
+                card:
+                  - padding: 0
+                  - background: none
+                  - border: none
+                  - box-shadow: none
+                  - height: 8px
+
+      # =============================================================
+      #  ROOM SELECT — Toggle Grid
+      #  NOTE: Add/remove rows to match your room count.
+      #        Update room names and input_boolean entities.
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 16px 20px 8px 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  const rooms = [
+                    'input_boolean.vacuum_room_1', 'input_boolean.vacuum_room_2',
+                    'input_boolean.vacuum_room_3', 'input_boolean.vacuum_room_4',
+                    'input_boolean.vacuum_room_5', 'input_boolean.vacuum_room_6',
+                    'input_boolean.vacuum_room_7', 'input_boolean.vacuum_room_8',
+                    'input_boolean.vacuum_room_9', 'input_boolean.vacuum_room_10',
+                    'input_boolean.vacuum_room_11'
+                  ];
+                  const count = rooms.filter(r => states[r].state === 'on').length;
+                  return `<div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Select Rooms</span>
+                    <span style="font-size: 12px; color: ${count > 0 ? '#4CAF50' : 'var(--secondary-text-color)'};">${count} selected</span>
+                  </div>`;
+                ]]]
+          # Row 1
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_1
+                name: Room 1
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_2
+                name: Room 2
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_3
+                name: Room 3
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+          # Row 2
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_4
+                name: Room 4
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_5
+                name: Room 5
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_6
+                name: Room 6
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+          # Row 3
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_7
+                name: Room 7
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_8
+                name: Room 8
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_9
+                name: Room 9
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+          # Row 4 (2 rooms + empty spacer)
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_10
+                name: Room 10
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_boolean.vacuum_room_11
+                name: Room 11
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: toggle
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return entity.state === 'on' ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return entity.state === 'on' ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 11px
+                    - color: |
+                        [[[
+                          return entity.state === 'on' ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                show_name: false
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: none
+                styles:
+                  card:
+                    - background: none
+                    - border: none
+                    - box-shadow: none
+                    - padding: 0
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 0
+                - background: none
+                - border: none
+                - box-shadow: none
+                - height: 8px
+
+      # =============================================================
+      #  CLEANING COUNT + START / PAUSE / DOCK
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 16px 20px 8px 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  return `<div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Cleaning Count</div>`;
+                ]]]
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                entity: input_number.vacuum_clean_repeat
+                name: "1×"
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: input_number.set_value
+                  service_data:
+                    entity_id: input_number.vacuum_clean_repeat
+                    value: 1
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return parseFloat(entity.state) === 1 ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return parseFloat(entity.state) === 1 ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 14px
+                    - font-weight: 500
+                    - color: |
+                        [[[
+                          return parseFloat(entity.state) === 1 ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+              - type: custom:button-card
+                entity: input_number.vacuum_clean_repeat
+                name: "2×"
+                show_icon: false
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: input_number.set_value
+                  service_data:
+                    entity_id: input_number.vacuum_clean_repeat
+                    value: 2
+                styles:
+                  card:
+                    - background: |
+                        [[[
+                          return parseFloat(entity.state) === 2 ? 'rgba(76,175,80,0.4)' : 'rgba(0,0,0,0.2)';
+                        ]]]
+                    - border: |
+                        [[[
+                          return parseFloat(entity.state) === 2 ? '1px solid rgba(76,175,80,0.6)' : '1px solid transparent';
+                        ]]]
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 10px 4px
+                  name:
+                    - font-size: 14px
+                    - font-weight: 500
+                    - color: |
+                        [[[
+                          return parseFloat(entity.state) === 2 ? '#fff' : 'var(--secondary-text-color)';
+                        ]]]
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 12px 20px 8px 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  return `<div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Controls</div>`;
+                ]]]
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                icon: mdi:play
+                name: Start
+                show_name: true
+                show_icon: true
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: script.start_vacuum_clean
+                  confirmation:
+                    text: Start cleaning selected rooms?
+                styles:
+                  card:
+                    - background: rgba(76,175,80,0.3)
+                    - border: 1px solid rgba(76,175,80,0.5)
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 14px 4px
+                  icon:
+                    - width: 28px
+                    - height: 28px
+                    - color: '#4CAF50'
+                  name:
+                    - font-size: 12px
+                    - color: var(--secondary-text-color)
+                    - margin-top: 4px
+              - type: custom:button-card
+                icon: mdi:pause
+                name: Pause
+                show_name: true
+                show_icon: true
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: vacuum.pause
+                  service_data:
+                    entity_id: vacuum.YOUR_VACUUM
+                styles:
+                  card:
+                    - background: rgba(0,0,0,0.2)
+                    - border: none
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 14px 4px
+                  icon:
+                    - width: 28px
+                    - height: 28px
+                    - color: '#FF9800'
+                  name:
+                    - font-size: 12px
+                    - color: var(--secondary-text-color)
+                    - margin-top: 4px
+              - type: custom:button-card
+                icon: mdi:home
+                name: Dock
+                show_name: true
+                show_icon: true
+                show_state: false
+                tap_action:
+                  action: call-service
+                  service: vacuum.return_to_base
+                  service_data:
+                    entity_id: vacuum.YOUR_VACUUM
+                styles:
+                  card:
+                    - background: rgba(0,0,0,0.2)
+                    - border: none
+                    - box-shadow: none
+                    - border-radius: 12px
+                    - padding: 14px 4px
+                  icon:
+                    - width: 28px
+                    - height: 28px
+                    - color: '#2196F3'
+                  name:
+                    - font-size: 12px
+                    - color: var(--secondary-text-color)
+                    - margin-top: 4px
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 0
+                - background: none
+                - border: none
+                - box-shadow: none
+                - height: 8px
+
+      # =============================================================
+      #  LIVE MAP — Display Only (with header)
+      #  NOTE: Adjust scale() and translateY() for your floor plan.
+      #        Remove the header card if you don't want the logos.
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+              overflow: hidden;
+            }
+        cards:
+          # --- Map Header (Roborock logo + optional icon) ---
+          - type: custom:button-card
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 12px 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  return `
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <img src="/local/icons/roborock-logo-white.svg" style="height: 28px;" />
+                      <img src="/local/icons/r2d2.svg" style="height: 36px;" />
+                    </div>
+                  `;
+                ]]]
+          # --- Map Image ---
+          - type: picture-entity
+            entity: image.YOUR_VACUUM_map
+            show_name: false
+            show_state: false
+            card_mod:
+              style:
+                hui-image$: |
+                  img {
+                    image-rendering: auto;
+                    filter: contrast(1.1) saturate(1.2) blur(0.5px);
+                    transform: scale(1.3) translateY(11%);
+                  }
+                .: |
+                  ha-card {
+                    border: none;
+                    box-shadow: none;
+                  }
+
+      # =============================================================
+      #  CLEANING STATS
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            entity: vacuum.YOUR_VACUUM
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  const area = states['sensor.YOUR_VACUUM_cleaning_area'].state;
+                  const time = states['sensor.YOUR_VACUUM_cleaning_time'].state;
+                  const progress = states['sensor.YOUR_VACUUM_cleaning_progress'].state;
+                  const lastBegin = states['sensor.YOUR_VACUUM_last_clean_begin'].state;
+                  const totalArea = states['sensor.YOUR_VACUUM_total_cleaning_area'].state;
+                  const totalCount = states['sensor.YOUR_VACUUM_total_cleaning_count'].state;
+                  const totalTime = states['sensor.YOUR_VACUUM_total_cleaning_time'].state;
+
+                  let lastCleanStr = '—';
+                  if (lastBegin && lastBegin !== 'unknown' && lastBegin !== 'unavailable') {
+                    const d = new Date(lastBegin);
+                    const now = new Date();
+                    const diffMs = now - d;
+                    const diffHrs = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffHrs / 24);
+                    if (diffDays > 0) {
+                      lastCleanStr = diffDays === 1 ? 'Yesterday' : diffDays + ' days ago';
+                    } else if (diffHrs > 0) {
+                      lastCleanStr = diffHrs + 'h ago';
+                    } else {
+                      lastCleanStr = 'Just now';
+                    }
+                  }
+
+                  const timeMin = parseFloat(time);
+                  const timeStr = timeMin >= 60 ? Math.floor(timeMin/60) + 'h ' + Math.round(timeMin%60) + 'm' : Math.round(timeMin) + 'm';
+
+                  const totalHrs = parseFloat(totalTime);
+                  const totalTimeStr = totalHrs >= 1 ? Math.round(totalHrs) + 'h' : Math.round(totalHrs * 60) + 'm';
+
+                  const progressVal = parseInt(progress);
+                  const showProgress = progressVal > 0 && progressVal < 100;
+
+                  return `
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Cleaning Stats</div>
+                      </div>
+
+                      ${showProgress ? `
+                        <div style="margin-bottom: 16px;">
+                          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-size: 12px; color: var(--secondary-text-color);">Progress</span>
+                            <span style="font-size: 12px; color: var(--primary-text-color);">${progressVal}%</span>
+                          </div>
+                          <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 6px; overflow: hidden;">
+                            <div style="background: #4CAF50; height: 100%; width: ${progressVal}%; border-radius: 4px; transition: width 0.5s ease;"></div>
+                          </div>
+                        </div>
+                      ` : ''}
+
+                      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                        <div style="text-align: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                          <div style="font-size: 11px; color: var(--secondary-text-color); margin-bottom: 4px;">LAST CLEAN</div>
+                          <div style="font-size: 15px; font-weight: 500; color: var(--primary-text-color);">${lastCleanStr}</div>
+                        </div>
+                        <div style="text-align: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                          <div style="font-size: 11px; color: var(--secondary-text-color); margin-bottom: 4px;">AREA</div>
+                          <div style="font-size: 15px; font-weight: 500; color: var(--primary-text-color);">${area} m²</div>
+                        </div>
+                        <div style="text-align: center; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                          <div style="font-size: 11px; color: var(--secondary-text-color); margin-bottom: 4px;">TIME</div>
+                          <div style="font-size: 15px; font-weight: 500; color: var(--primary-text-color);">${timeStr}</div>
+                        </div>
+                      </div>
+
+                      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--divider-color);">
+                        <div style="font-size: 11px; color: var(--secondary-text-color); text-transform: uppercase; margin-bottom: 8px;">Lifetime</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                          <div style="text-align: center;">
+                            <div style="font-size: 16px; font-weight: 500; color: var(--primary-text-color);">${totalCount}</div>
+                            <div style="font-size: 11px; color: var(--secondary-text-color);">Cleans</div>
+                          </div>
+                          <div style="text-align: center;">
+                            <div style="font-size: 16px; font-weight: 500; color: var(--primary-text-color);">${parseFloat(totalArea).toLocaleString()} m²</div>
+                            <div style="font-size: 11px; color: var(--secondary-text-color);">Total Area</div>
+                          </div>
+                          <div style="text-align: center;">
+                            <div style="font-size: 16px; font-weight: 500; color: var(--primary-text-color);">${totalTimeStr}</div>
+                            <div style="font-size: 11px; color: var(--secondary-text-color);">Total Time</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                ]]]
+
+      # =============================================================
+      #  CONSUMABLES
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            entity: vacuum.YOUR_VACUUM
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  const consumables = [
+                    { name: 'Main Brush', entity: 'sensor.YOUR_VACUUM_main_brush_time_left', maxHrs: 300, icon: 'mdi:brush' },
+                    { name: 'Side Brush', entity: 'sensor.YOUR_VACUUM_side_brush_time_left', maxHrs: 200, icon: 'mdi:pinwheel-outline' },
+                    { name: 'Filter', entity: 'sensor.YOUR_VACUUM_filter_time_left', maxHrs: 150, icon: 'mdi:air-filter' },
+                    { name: 'Sensors', entity: 'sensor.YOUR_VACUUM_sensor_time_left', maxHrs: 30, icon: 'mdi:eye-outline' },
+                    { name: 'Dock Strainer', entity: 'sensor.YOUR_VACUUM_dock_strainer_time_left', maxHrs: 150, icon: 'mdi:filter-variant' }
+                  ];
+
+                  let rows = '';
+                  consumables.forEach(c => {
+                    const hrs = parseFloat(states[c.entity].state);
+                    const pct = Math.min(100, Math.max(0, (hrs / c.maxHrs) * 100));
+                    const color = pct > 50 ? '#4CAF50' : pct > 20 ? '#FF9800' : '#F44336';
+                    const hrsStr = hrs >= 1 ? Math.round(hrs) + 'h' : Math.round(hrs * 60) + 'm';
+
+                    rows += `
+                      <div style="margin-bottom: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                          <div style="display: flex; align-items: center; gap: 8px;">
+                            <ha-icon icon="${c.icon}" style="width: 18px; height: 18px; color: ${color};"></ha-icon>
+                            <span style="font-size: 13px; color: var(--primary-text-color);">${c.name}</span>
+                          </div>
+                          <span style="font-size: 13px; color: var(--secondary-text-color);">${hrsStr} left</span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.3); border-radius: 4px; height: 6px; overflow: hidden;">
+                          <div style="background: ${color}; height: 100%; width: ${pct}%; border-radius: 4px;"></div>
+                        </div>
+                      </div>
+                    `;
+                  });
+
+                  return `
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <div style="width: 20px; height: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                          <ha-icon icon="mdi:wrench-clock" style="color: var(--secondary-text-color);"></ha-icon>
+                        </div>
+                        <div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Consumables</div>
+                      </div>
+                      ${rows}
+                    </div>
+                  `;
+                ]]]
+
+      # =============================================================
+      #  DOCK STATUS
+      #  NOTE: Drying time sensor returns SECONDS. If yours uses
+      #        minutes, remove the "/ 60" conversion below.
+      # =============================================================
+      - type: custom:stack-in-card
+        mode: vertical
+        layout_options:
+          columns: 4
+        card_mod:
+          style: |
+            ha-card {
+              border-radius: 24px;
+              border: 1px solid var(--divider-color);
+              box-shadow: var(--ha-card-box-shadow, 0px 2px 4px rgba(0,0,0,0.1)) !important;
+            }
+        cards:
+          - type: custom:button-card
+            entity: vacuum.YOUR_VACUUM
+            show_name: false
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            styles:
+              card:
+                - padding: 20px
+                - background: none
+                - border: none
+                - box-shadow: none
+              grid:
+                - grid-template-areas: '"content"'
+                - grid-template-columns: 1fr
+              custom_fields:
+                content:
+                  - width: 100%
+            custom_fields:
+              content: |
+                [[[
+                  const cleanTank = states['binary_sensor.YOUR_VACUUM_dock_clean_water_box'].state;
+                  const dirtyTank = states['binary_sensor.YOUR_VACUUM_dock_dirty_water_box'].state;
+                  const mopDrying = states['binary_sensor.YOUR_VACUUM_dock_mop_drying'].state;
+                  const dryingTime = states['sensor.YOUR_VACUUM_dock_mop_drying_remaining_time'].state;
+                  const dockError = states['sensor.YOUR_VACUUM_dock_dock_error'].state;
+                  const mopAttached = states['binary_sensor.YOUR_VACUUM_mop_attached'].state;
+                  const waterBox = states['binary_sensor.YOUR_VACUUM_water_box_attached'].state;
+                  const waterShortage = states['binary_sensor.YOUR_VACUUM_water_shortage'].state;
+
+                  const cleanTankOk = cleanTank === 'off';
+                  const dirtyTankOk = dirtyTank === 'off';
+                  const hasDockError = dockError && dockError !== 'ok';
+                  const isDrying = mopDrying === 'on';
+                  const hasWaterShortage = waterShortage === 'on';
+
+                  // Drying time: sensor returns SECONDS, convert to minutes
+                  const dryingMin = Math.round(parseInt(dryingTime) / 60);
+                  const dryingStr = dryingMin >= 60 ? Math.floor(dryingMin/60) + 'h ' + (dryingMin%60) + 'm' : dryingMin + 'm';
+
+                  const statusDot = (ok, label) => `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="width: 10px; height: 10px; border-radius: 50%; background: ${ok ? '#4CAF50' : '#F44336'}; flex-shrink: 0;"></div>
+                      <span style="font-size: 13px; color: var(--primary-text-color);">${label}</span>
+                    </div>
+                  `;
+
+                  return `
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <div style="width: 20px; height: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                          <ha-icon icon="mdi:robot-vacuum" style="color: var(--secondary-text-color);"></ha-icon>
+                        </div>
+                        <div style="font-size: 12px; color: var(--secondary-text-color); text-transform: uppercase;">Dock Status</div>
+                      </div>
+
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px;">
+                        ${statusDot(cleanTankOk, 'Clean Tank')}
+                        ${statusDot(dirtyTankOk, 'Dirty Tank')}
+                        ${statusDot(mopAttached === 'on', 'Mop Attached')}
+                        ${statusDot(waterBox === 'on', 'Water Box')}
+                        ${statusDot(!hasWaterShortage, 'Water Level')}
+                        ${statusDot(!hasDockError, 'Dock Status')}
+                      </div>
+
+                      ${isDrying ? `
+                        <div style="margin-top: 12px; padding: 10px 12px; background: rgba(156,39,176,0.15); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <ha-icon icon="mdi:fan" style="color: #9C27B0;"></ha-icon>
+                          </div>
+                          <span style="font-size: 13px; color: var(--primary-text-color);">Mop Drying · ${dryingStr} remaining</span>
+                        </div>
+                      ` : ''}
+
+                      ${hasDockError ? `
+                        <div style="margin-top: 12px; padding: 10px 12px; background: rgba(244,67,54,0.15); border-radius: 8px; display: flex; align-items: center; gap: 8px;">
+                          <div style="width: 18px; height: 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <ha-icon icon="mdi:alert-circle" style="color: #F44336;"></ha-icon>
+                          </div>
+                          <span style="font-size: 13px; color: #F44336;">${dockError.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                        </div>
+                      ` : ''}
+                    </div>
+                  `;
+                ]]]
+
+cards: []
