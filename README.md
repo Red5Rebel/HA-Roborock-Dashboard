@@ -1,21 +1,21 @@
 # Roborock Vacuum Dashboard for Home Assistant
 
-A comprehensive Roborock robot vacuum control dashboard built with custom Lovelace cards. Features room-by-room cleaning control, mode switching, live map display, consumables tracking, and dock status monitoring — all in a clean, dark-themed UI.
+A comprehensive Roborock robot vacuum control dashboard built with custom Lovelace cards. Features room-by-room cleaning control, mode switching, live map display, consumables tracking, and dock status monitoring, all in a clean, dark-themed UI.
 
 ![Dashboard Screenshot](screenshots/dashboard.png)
 
 ## Features
 
-- **Status Bar** — Battery level (color-coded), vacuum status, current room
-- **Mode Toggle** — Switch between Vacuum and Mop modes with one tap
-- **Mop Options** — Water flow and route selection (only visible in Mop mode)
-- **Room Selection** — Toggle grid for selecting specific rooms to clean
-- **Cleaning Controls** — Start (with confirmation), Pause, and Dock buttons
-- **Repeat Count** — Clean selected rooms 1× or 2×
-- **Live Map** — Display-only map from the native Roborock integration
-- **Cleaning Stats** — Last clean info, area, duration, progress bar, lifetime totals
-- **Consumables** — Visual progress bars for brushes, filter, sensors, dock strainer
-- **Dock Status** — Tank levels, mop attachment, water status, drying timer, error alerts
+- **Status Bar** - Battery level (color-coded), vacuum status, current room
+- **Mode Toggle** - Switch between Vacuum and Mop modes with one tap
+- **Mop Options** - Water flow and route selection (only visible in Mop mode)
+- **Room Selection** - Toggle grid for selecting specific rooms to clean
+- **Cleaning Controls** - Start (with confirmation), Pause, and Dock buttons
+- **Repeat Count** - Clean selected rooms 1× or 2×
+- **Live Map** - Display-only map from the native Roborock integration
+- **Cleaning Stats** - Last clean info, area, duration, progress bar, lifetime totals
+- **Consumables** - Visual progress bars for brushes, filter, sensors, dock strainer
+- **Dock Status** - Tank levels, mop attachment, water status, drying timer, error alerts
 
 ## Prerequisites
 
@@ -69,7 +69,7 @@ Copy the `www/icons/` folder to your Home Assistant `/config/www/icons/` directo
 - `/local/icons/roborock-logo-white.svg`
 - `/local/icons/r2d2.svg`
 
-> **Note:** The R2-D2 icon is a Star Wars easter egg. Feel free to swap it for any SVG you like, or remove the header entirely.
+> **Note:** The R2-D2 icon is because I'm a Star Wars nerd and named my Vacuum R2 (Original, I know). Feel free to swap it for any SVG you like, or remove the header entirely.
 
 ### Step 5: Add the Dashboard
 
@@ -81,7 +81,7 @@ Copy the `www/icons/` folder to your Home Assistant `/config/www/icons/` directo
 
 ### Step 6: Add Recorder Excludes (Optional but Recommended)
 
-The input booleans and input number are UI state toggles — no need to record their history. Add to your `recorder:` configuration:
+The input booleans and input number are UI state toggles - no need to record their history. Add to your `recorder:` configuration:
 
 ```yaml
 recorder:
@@ -130,13 +130,13 @@ The dashboard YAML uses placeholder entity IDs that you **must** replace with yo
 | `select.YOUR_VACUUM_mop_intensity` | ... | Mop water flow |
 | `select.YOUR_VACUUM_mop_mode` | ... | Mop route mode |
 
-> **Tip:** In Home Assistant, go to Developer Tools → States, filter by your vacuum name, and you'll see all available entities.
+> **Tip:** In Home Assistant, go to Developer Tools > States, filter by your vacuum name, and you'll see all available entities.
 
 ## Finding Your Room IDs
 
 Room IDs are required for the `start_vacuum_clean` script. To find yours:
 
-1. Go to **Developer Tools → Actions**
+1. Go to **Developer Tools > Actions**
 2. Select `vacuum.send_command`
 3. Target your vacuum entity
 4. Use command `get_room_mapping` (or check your Roborock app)
@@ -160,10 +160,10 @@ You'll almost certainly need to adjust these for your floor plan:
 ## Customization Notes
 
 ### Fan Speed Options
-The dashboard's vacuum mode script uses `max_plus` fan speed. Your model may support different values. Check Developer Tools → States → your vacuum entity → `fan_speed_list` attribute.
+The dashboard's vacuum mode script uses `max_plus` fan speed. Your model may support different values. Check Developer Tools > States > your vacuum entity > `fan_speed_list` attribute.
 
 ### Mop Mode
-There is no true "mop only" mode on Roborock vacuums — the fan always runs. "Mop mode" in this dashboard sets a lower suction level (`turbo`) with mopping enabled. Adjust to your preference in the scripts.
+There is no true "mop only" mode on Roborock vacuums - the fan always runs. "Mop mode" in this dashboard sets a lower suction level (`turbo`) with mopping enabled. Adjust to your preference in the scripts.
 
 ### Consumable Max Hours
 The consumables card uses these defaults for progress bar calculations:
@@ -215,8 +215,6 @@ Built with:
 - [Roborock Core Integration](https://www.home-assistant.io/integrations/roborock/)
 - [Thanks to Daniel Torobekov for my dashboard background](https://www.pexels.com/photo/low-angle-shot-of-a-starry-night-sky-10257142/)
 
-Ai was only used to format this readme, and only due to lack of time and redditors eagerness for the setup.
+Ai was only used to format this readme, and only due to lack of time and the eagerness of Home Assistant redditors.
 
 ## License
-
-MIT — do whatever you want with it.
