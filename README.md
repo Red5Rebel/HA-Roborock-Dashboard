@@ -218,3 +218,4 @@ Built with:
 Ai was only used to format this readme, and only due to lack of time and the eagerness of Home Assistant redditors.
 
 ## License
+This project is licensed under the MIT license. See [LICENSE](https://github.com/Red5Rebel/HA-Roborock-Dashboard/blob/6e8aeee02f173d82c97a68efebf8bba537f87920/LICENSE) for details
