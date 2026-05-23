@@ -94,21 +94,21 @@ start_vacuum_clean:
 
 # ROOM ID MAPPING — Update these to match YOUR home:
 # ┌──────────────────────────────────────────────────┐
-# │ input_boolean.vacuum_room_1  → Room ID: 16       │
-# │ input_boolean.vacuum_room_2  → Room ID: 17       │
-# │ input_boolean.vacuum_room_3  → Room ID: 18       │
-# │ input_boolean.vacuum_room_4  → Room ID: 19       │
-# │ input_boolean.vacuum_room_5  → Room ID: 20       │
-# │ input_boolean.vacuum_room_6  → Room ID: 21       │
-# │ input_boolean.vacuum_room_7  → Room ID: 22       │
-# │ input_boolean.vacuum_room_8  → Room ID: 23       │
-# │ input_boolean.vacuum_room_9  → Room ID: 24       │
-# │ input_boolean.vacuum_room_10 → Room ID: 25       │
-# │ input_boolean.vacuum_room_11 → Room ID: 26       │
+# │ input_boolean.vacuum_room_1  > Room ID: 16       │
+# │ input_boolean.vacuum_room_2  > Room ID: 17       │
+# │ input_boolean.vacuum_room_3  > Room ID: 18       │
+# │ input_boolean.vacuum_room_4  > Room ID: 19       │
+# │ input_boolean.vacuum_room_5  > Room ID: 20       │
+# │ input_boolean.vacuum_room_6  > Room ID: 21       │
+# │ input_boolean.vacuum_room_7  > Room ID: 22       │
+# │ input_boolean.vacuum_room_8  > Room ID: 23       │
+# │ input_boolean.vacuum_room_9  > Room ID: 24       │
+# │ input_boolean.vacuum_room_10 > Room ID: 25       │
+# │ input_boolean.vacuum_room_11 > Room ID: 26       │
 # └──────────────────────────────────────────────────┘
 #
 # To find your room IDs:
-# 1. Developer Tools → Actions → vacuum.send_command
+# 1. Developer Tools > Actions > vacuum.send_command
 # 2. Target your vacuum, command: get_room_mapping
 # 3. Or check the Roborock app for room names/IDs
 #
