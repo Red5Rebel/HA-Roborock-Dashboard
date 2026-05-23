@@ -30,7 +30,7 @@ A comprehensive Roborock robot vacuum control dashboard built with custom Lovela
 ### Confirmed Compatible Models
 - Roborock QRevo S
 
-Other Roborock models with the core HA integration should work — you'll just need to update entity names and room IDs.
+Other Roborock models with the core HA integration should work, you'll just need to update entity names and room IDs.
 
 ## Installation
 
@@ -51,7 +51,7 @@ If you define input booleans inline in `configuration.yaml`, merge the contents 
 
 Copy the contents of `config/input_numbers.yaml` into your input number configuration.
 
-Same options apply — split YAML or inline in `configuration.yaml`.
+Same options apply - split YAML or inline in `configuration.yaml`.
 
 ### Step 3: Add Scripts
 
