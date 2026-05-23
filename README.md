@@ -215,6 +215,8 @@ Built with:
 - [Roborock Core Integration](https://www.home-assistant.io/integrations/roborock/)
 - [Thanks to Daniel Torobekov for my dashboard background](https://www.pexels.com/photo/low-angle-shot-of-a-starry-night-sky-10257142/)
 
+Ai was only used to format this readme, and only due to lack of time and redditors eagerness for the setup.
+
 ## License
 
 MIT — do whatever you want with it.
