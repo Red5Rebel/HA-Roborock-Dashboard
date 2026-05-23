@@ -1,0 +1,68 @@
+# Roborock Vacuum Dashboard - Input Booleans
+# Add these to your input_boolean configuration
+#
+# If using split YAML: save as /config/input_booleans/roborock_vacuum.yaml
+# If inline: merge under your existing input_boolean: key in configuration.yaml
+
+vacuum_mop_mode:
+  name: "Vacuum Mop Mode"
+  icon: mdi:water
+  initial: false
+
+vacuum_room_1:
+  name: "Vacuum Room 1"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_2:
+  name: "Vacuum Room 2"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_3:
+  name: "Vacuum Room 3"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_4:
+  name: "Vacuum Room 4"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_5:
+  name: "Vacuum Room 5"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_6:
+  name: "Vacuum Room 6"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_7:
+  name: "Vacuum Room 7"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_8:
+  name: "Vacuum Room 8"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_9:
+  name: "Vacuum Room 9"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_10:
+  name: "Vacuum Room 10"
+  icon: mdi:floor-plan
+  initial: false
+
+vacuum_room_11:
+  name: "Vacuum Room 11"
+  icon: mdi:floor-plan
+  initial: false
+
+# NOTE: Add or remove room toggles to match the number of rooms in your home.
+# Each toggle maps to a room ID in the start_vacuum_clean script.
